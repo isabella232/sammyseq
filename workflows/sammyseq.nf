@@ -134,7 +134,7 @@ workflow SAMMYSEQ {
     //
     CAT_FASTQ (ch_merge_lane.multiple)
         .reads
-        .mix(ch_samplesheet.single)
+        .mix(ch_merge_lane.single)
         .set {ch_starter}
     // ch_versions = ch_versions.mix(CAT_FASTQ.out.versions.first())
 
