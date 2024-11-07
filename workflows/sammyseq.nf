@@ -132,7 +132,7 @@ workflow SAMMYSEQ {
     //
     // MODULE: Concatenate FastQ files from same sample if required
     //
-    CAT_FASTQ (ch_samplesheet.multiple)
+    CAT_FASTQ (ch_merge_lane.multiple)
         .reads
         .mix(ch_samplesheet.single)
         .set {ch_starter}
