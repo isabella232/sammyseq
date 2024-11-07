@@ -15,16 +15,16 @@ ch_fasta_meta = ch_fasta.map{ it -> [[id:it[0].baseName], it] }.collect()
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-include { paramsSummaryLog; paramsSummaryMap } from 'plugin/nf-validation'
+// include { paramsSummaryLog; paramsSummaryMap } from 'plugin/nf-validation'
 
-def logo = NfcoreTemplate.logo(workflow, params.monochrome_logs)
-def citation = '\n' + WorkflowMain.citation(workflow) + '\n'
-def summary_params = paramsSummaryMap(workflow)
+// def logo = NfcoreTemplate.logo(workflow, params.monochrome_logs)
+// def citation = '\n' + WorkflowMain.citation(workflow) + '\n'
+// def summary_params = paramsSummaryMap(workflow)
 
 // Print parameter summary log to screen
-log.info logo + paramsSummaryLog(workflow) + citation
+// log.info logo + paramsSummaryLog(workflow) + citation
 
-WorkflowSammyseq.initialise(params, log)
+// WorkflowSammyseq.initialise(params, log)
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -46,7 +46,7 @@ ch_multiqc_custom_methods_description = params.multiqc_methods_description ? fil
 //
 // SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
 //
-include { INPUT_CHECK } from '../subworkflows/local/input_check'
+// include { INPUT_CHECK } from '../subworkflows/local/input_check'
 include { PREPARE_GENOME      } from '../subworkflows/local/prepare_genome'
 include { FASTQ_ALIGN_BWAALN  } from '../subworkflows/nf-core/fastq_align_bwaaln/main.nf'
 include { CAT_FRACTIONS } from '../subworkflows/local/cat_fractions'
@@ -68,8 +68,9 @@ include { RTWOSAMPLESMLE } from '../modules/local/rtwosamplesmle'
 include { CAT_FASTQ                   } from '../modules/nf-core/cat/fastq'
 include { FASTQC                      } from '../modules/nf-core/fastqc/main'
 include { MULTIQC                     } from '../modules/nf-core/multiqc/main'
-include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoftwareversions/main'
+// include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoftwareversions/main'
 include { TRIMMOMATIC                 } from '../modules/nf-core/trimmomatic'
+include { TRIMGALORE } from '../modules/nf-core/trimgalore/main'
 include { SAMTOOLS_FAIDX              } from '../modules/nf-core/samtools/faidx'
 include { DEEPTOOLS_BAMCOVERAGE       } from '../modules/nf-core/deeptools/bamcoverage'
 
@@ -89,7 +90,7 @@ workflow SAMMYSEQ {
     ch_samplesheet // channel: samplesheet read in from --input
     main:
 
-    ch_versions = Channel.empty()
+    // ch_versions = Channel.empty()
 
     //
     // SUBWORKFLOW: Read in samplesheet, validate and stage input files
@@ -103,72 +104,103 @@ workflow SAMMYSEQ {
     PREPARE_GENOME (params.fasta,
                     params.bwa)
 
-    ch_versions = ch_versions.mix(PREPARE_GENOME.out.versions)
+    // ch_versions = ch_versions.mix(PREPARE_GENOME.out.versions)
 
     if (params.stopAt == 'PREPARE_GENOME') {
         return
     }
 
-    INPUT_CHECK (
-        file(params.input)
-    )
+    // INPUT_CHECK (
+    //     file(params.input)
+    // )
 
     //INPUT_CHECK.out.reads.view()
 
-    //TODO use branch
 
-    ch_notmerge_lane = INPUT_CHECK.out.reads
-                     .map{ meta, path ->
-                        id=meta.subMap('id')
-                        meta=meta
-                        path=path
-                        [id.id, meta, path]
-                      }
-                     .groupTuple()
-                     .filter{ it[1].size() == 1 }
-                     .map{ id, meta, path ->
-                        meta_notmerge=meta[0]
-                        path_notmerge=path[0]
-                        [meta_notmerge, path_notmerge]
-                     }
+    //
+    // Branch channels from input samplesheet channel
+    //
+    ch_samplesheet
+        .branch { meta, fastqs ->
+            single  : fastqs.size() == 1
+                return [ meta, fastqs.flatten() ]
+            multiple: fastqs.size() > 1
+                return [ meta, fastqs.flatten() ]
+        }
+        .set { ch_merge_lane }
 
-    //INPUT_CHECK.out.reads.view{"INPUT_CHECK.out.reads : ${it}"}
-    //ch_notmerge_lane.view{"ch_notmerge_lane: ${it}"}
+    //
+    // MODULE: Concatenate FastQ files from same sample if required
+    //
+    CAT_FASTQ (ch_samplesheet.multiple)
+        .reads
+        .mix(ch_samplesheet.single)
+        .set {ch_starter}
+    // ch_versions = ch_versions.mix(CAT_FASTQ.out.versions.first())
 
-    ch_merge_lane = INPUT_CHECK.out.reads
-                     .map{ meta, path ->
-                        id=meta.subMap('id')
-                        meta=meta
-                        path=path
-                        [id.id, meta, path]
-                      }
-                     .groupTuple()
-                     .filter{ it[1].size() >= 2 } //filtra per numero di meta presenti dopo il tupla se hai due meta vuol dire che devi unire due campioni
-                     .map{ id, meta, path ->
-                        single = meta[0].subMap('single_end')
-                        meta = meta[0]
-                        def flatPath = path.flatten()
-                        [ meta , flatPath ]
-                      }
+    // ch_notmerge_lane = INPUT_CHECK.out.reads
+    //                  .map{ meta, path ->
+    //                     id=meta.subMap('id')
+    //                     meta=meta
+    //                     path=path
+    //                     [id.id, meta, path]
+    //                   }
+    //                  .groupTuple()
+    //                  .filter{ it[1].size() == 1 }
+    //                  .map{ id, meta, path ->
+    //                     meta_notmerge=meta[0]
+    //                     path_notmerge=path[0]
+    //                     [meta_notmerge, path_notmerge]
+    //                  }
+
+    // //INPUT_CHECK.out.reads.view{"INPUT_CHECK.out.reads : ${it}"}
+    // //ch_notmerge_lane.view{"ch_notmerge_lane: ${it}"}
+
+    // ch_merge_lane = INPUT_CHECK.out.reads
+    //                  .map{ meta, path ->
+    //                     id=meta.subMap('id')
+    //                     meta=meta
+    //                     path=path
+    //                     [id.id, meta, path]
+    //                   }
+    //                  .groupTuple()
+    //                  .filter{ it[1].size() >= 2 } //filtra per numero di meta presenti dopo il tupla se hai due meta vuol dire che devi unire due campioni
+    //                  .map{ id, meta, path ->
+    //                     single = meta[0].subMap('single_end')
+    //                     meta = meta[0]
+    //                     def flatPath = path.flatten()
+    //                     [ meta , flatPath ]
+    //                   }
 
     //ch_merge_lane.view{"ch_merge_lane ${it}"}
 
-    ch_versions = ch_versions.mix(INPUT_CHECK.out.versions)
+    // ch_versions = ch_versions.mix(INPUT_CHECK.out.versions)
 
-    if (params.stopAt == 'INPUT_CHECK') {
-        return
-    }
+    // if (params.stopAt == 'INPUT_CHECK') {
+    //     return
+    // }
 
     //ch_merge_lane.view{"ch_merge_lane : ${it}"}
 
-    CAT_FASTQ (
-           ch_merge_lane
-    ).reads.set { cat_lane_output }
+    // CAT_FASTQ (
+    //        ch_merge_lane
+    // ).reads.set { ch_starter }
 
     //cat_lane_output.view()
-    ch_starter = cat_lane_output.mix(ch_notmerge_lane)
+    // ch_starter = cat_lane_output.mix(ch_notmerge_lane)
+    // ch_starter = cat_lane_output
 
     //ch_starter.view{"ch_starter : ${it}"}
+
+    // //
+    // // MODULE: Concatenate FastQ files from same sample if required
+    // //
+    // CAT_FASTQ (ch_samplesheet.multiple)
+    //     .reads
+    //     .mix(ch_samplesheet.single)
+    //     .set {ch_fastq}
+    // ch_versions = ch_versions.mix(CAT_FASTQ.out.versions.first())
+
 
     if (params.stopAt == 'CAT_FASTQ_lane') {
         return
@@ -201,18 +233,26 @@ workflow SAMMYSEQ {
     }
 
     //
+    // MODULE: Run TrimGalore!
+    //
+    // if (!params.skip_trimming) {
+        TRIMGALORE(merged_reads)
+        reads = TRIMGALORE.out.reads
+
+    //
     // MODULE: Run FastQC
     //
 
-    TRIMMOMATIC (
-       merged_reads
-    )
+    // TRIMMOMATIC (
+    //    merged_reads
+    // )
 
     //TRIMMOMATIC.out.trimmed_reads.view()
 
 
     //a channel is created for the trimmed files and the id is renamed to meta, so that when passed to fastqc it does not overwrite the output files with non-trimmed ones
-    ch_fastqc_trim=TRIMMOMATIC.out.trimmed_reads
+    // ch_fastqc_trim=TRIMMOMATIC.out.trimmed_reads
+    ch_fastqc_trim=TRIMGALORE.out.reads
                    .map{ meta, path ->
                         def id=meta.subMap('id')
                         newid=id.id + "_trim"
@@ -230,17 +270,18 @@ workflow SAMMYSEQ {
     )
     ch_multiqc_files = ch_multiqc_files.mix(FASTQC.out.zip.collect{it[1]})
 
-    ch_versions = ch_versions.mix(FASTQC.out.versions.first())
+    // ch_versions = ch_versions.mix(FASTQC.out.versions.first())
 
 
 
-    if (params.stopAt == 'TRIMMOMATIC') {
-        return
-    }
+    // if (params.stopAt == 'TRIMMOMATIC') {
+    //     return
+    // }
 
 
     FASTQ_ALIGN_BWAALN (
-        TRIMMOMATIC.out.trimmed_reads,
+        // TRIMMOMATIC.out.trimmed_reads,
+        TRIMGALORE.out.reads,
         PREPARE_GENOME.out.bwa_index
     )
 
@@ -398,9 +439,9 @@ workflow SAMMYSEQ {
 
 
 
-    CUSTOM_DUMPSOFTWAREVERSIONS (
-        ch_versions.unique().collectFile(name: 'collated_versions.yml')
-    )
+    // CUSTOM_DUMPSOFTWAREVERSIONS (
+    //     ch_versions.unique().collectFile(name: 'collated_versions.yml')
+    // )
 
     //
     // MODULE: MultiQC
@@ -448,7 +489,7 @@ workflow SAMMYSEQ {
     )
 
     emit:multiqc_report = MULTIQC.out.report.toList() // channel: /path/to/multiqc_report.html
-    versions       = ch_versions                 // channel: [ path(versions.yml) ]
+    // versions       = ch_versions                 // channel: [ path(versions.yml) ]
 
 }
 
