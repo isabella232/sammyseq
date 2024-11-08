@@ -17,7 +17,7 @@ ch_fasta_meta = ch_fasta.map{ it -> [[id:it[0].baseName], it] }.collect()
 
 // include { paramsSummaryLog; paramsSummaryMap } from 'plugin/nf-validation'
 include { paramsSummaryMap } from 'plugin/nf-schema'
-include { paramsSummaryMultiqc     } from '../../subworkflows/nf-core/utils_nfcore_sammyseq_pipeline'
+include { paramsSummaryMultiqc     } from '../../subworkflows/nf-core/utils_nfcore_pipeline'
 
 // def logo = NfcoreTemplate.logo(workflow, params.monochrome_logs)
 // def citation = '\n' + WorkflowMain.citation(workflow) + '\n'
@@ -50,9 +50,7 @@ ch_multiqc_custom_methods_description = params.multiqc_methods_description ? fil
 //
 // include { INPUT_CHECK } from '../subworkflows/local/input_check'
 include { PREPARE_GENOME      } from '../subworkflows/local/prepare_genome'
-include { FASTQ_ALIGN_BWAALN  } from '../subworkflows/nf-core/fastq_align_bwaaln/main.nf'
 include { CAT_FRACTIONS } from '../subworkflows/local/cat_fractions'
-include { BAM_MARKDUPLICATES_PICARD } from '../subworkflows/nf-core/bam_markduplicates_picard'
 include { CUT_SIZES_GENOME } from "../modules/local/chromosomes_size"
 include { RTWOSAMPLESMLE } from '../modules/local/rtwosamplesmle'
 
@@ -66,13 +64,17 @@ include { RTWOSAMPLESMLE } from '../modules/local/rtwosamplesmle'
 //
 // MODULE: Installed directly from nf-core/modules
 //
-
+include { UTILS_NEXTFLOW_PIPELINE     } from '../subworkflows/nf-core/utils_nextflow_pipeline/main'
+include { UTILS_NFSCHEMA_PLUGIN       } from '../subworkflows/nf-core/utils_nfschema_plugin/main'
+include { UTILS_NFCORE_PIPELINE       } from '../subworkflows/nf-core/utils_nfcore_pipeline/main'
 include { CAT_FASTQ                   } from '../modules/nf-core/cat/fastq'
 include { FASTQC                      } from '../modules/nf-core/fastqc/main'
 include { MULTIQC                     } from '../modules/nf-core/multiqc/main'
 // include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoftwareversions/main'
 include { TRIMMOMATIC                 } from '../modules/nf-core/trimmomatic'
-include { TRIMGALORE } from '../modules/nf-core/trimgalore/main'
+include { TRIMGALORE                  } from '../modules/nf-core/trimgalore/main'
+include { FASTQ_ALIGN_BWAALN          } from '../subworkflows/nf-core/fastq_align_bwaaln/main.nf'
+include { BAM_MARKDUPLICATES_PICARD   } from '../subworkflows/nf-core/bam_markduplicates_picard'
 include { SAMTOOLS_FAIDX              } from '../modules/nf-core/samtools/faidx'
 include { DEEPTOOLS_BAMCOVERAGE       } from '../modules/nf-core/deeptools/bamcoverage'
 
