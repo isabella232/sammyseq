@@ -91,6 +91,7 @@ workflow SAMMYSEQ {
     main:
 
     // ch_versions = Channel.empty()
+    ch_multiqc_files = Channel.empty()
 
     //
     // SUBWORKFLOW: Read in samplesheet, validate and stage input files
