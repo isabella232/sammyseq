@@ -17,7 +17,7 @@ ch_fasta_meta = ch_fasta.map{ it -> [[id:it[0].baseName], it] }.collect()
 
 // include { paramsSummaryLog; paramsSummaryMap } from 'plugin/nf-validation'
 include { paramsSummaryMap } from 'plugin/nf-schema'
-include { paramsSummaryMultiqc     } from '../../subworkflows/nf-core/utils_nfcore_pipeline'
+include { paramsSummaryMultiqc     } from '../../subworkflows/nf-core/utils_nfcore_sammyseq_pipeline'
 
 // def logo = NfcoreTemplate.logo(workflow, params.monochrome_logs)
 // def citation = '\n' + WorkflowMain.citation(workflow) + '\n'
