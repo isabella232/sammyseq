@@ -17,6 +17,7 @@ ch_fasta_meta = ch_fasta.map{ it -> [[id:it[0].baseName], it] }.collect()
 
 // include { paramsSummaryLog; paramsSummaryMap } from 'plugin/nf-validation'
 include { paramsSummaryMap } from 'plugin/nf-schema'
+include { paramsSummaryMultiqc     } from '../../subworkflows/nf-core/utils_nfcore_pipeline'
 
 // def logo = NfcoreTemplate.logo(workflow, params.monochrome_logs)
 // def citation = '\n' + WorkflowMain.citation(workflow) + '\n'
@@ -284,7 +285,7 @@ workflow SAMMYSEQ {
     FASTQ_ALIGN_BWAALN (
         // TRIMMOMATIC.out.trimmed_reads,
         TRIMGALORE.out.reads,
-        PREPARE_GENOME.out.bwa_index
+        PREPARE_GENOME.out.bwa
     )
 
     if (params.stopAt == 'FASTQ_ALIGN_BWAALN') {
