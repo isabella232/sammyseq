@@ -10,7 +10,7 @@ workflow CAT_FRACTIONS {
 
     main:
 
-        all_files = starting_files.map { meta, fastq -> 
+        all_files = starting_files.map { meta, fastq ->
             def expID = meta.expID  // Prendi l'expID da meta
             meta.remove('fraction') // Rimuovi il campo 'fraction'
             [expID, meta, fastq]
@@ -19,17 +19,17 @@ workflow CAT_FRACTIONS {
         all_files.groupTuple( by:0 )
             .map{ expID, meta , fastq ->
                 meta2 = meta[0].clone()  // Prendi solo la prima mappa e crea una copia
-                meta2.id = expID  // Sostituisci il valore nel campo id con expID 
+                meta2.id = expID  // Sostituisci il valore nel campo id con expID
                 [ [meta2], fastq.flatten().toList() ]
             }
             .set { reads_to_merge }
 
             reads_to_merge
-            .filter { meta, fastq -> fastq.size() > 1 }    
+            .filter { meta, fastq -> fastq.size() > 1 }
             .set { ch_reads_to_process_in_CAT_FASTQ }
 
-            ch_reads_to_process_in_CAT_FASTQ    
-            .flatMap { meta, fastq  -> 
+            ch_reads_to_process_in_CAT_FASTQ
+            .flatMap { meta, fastq  ->
                     meta.collect { m -> [m,fastq]}
                 }
             .set { ch_to_CAT }
@@ -38,7 +38,7 @@ workflow CAT_FRACTIONS {
 
             CAT_FASTQ (
                     ch_to_CAT
-            ).reads.set { cat_fastq_output }        
+            ).reads.set { cat_fastq_output }
 
             ch_cat_adjusted = CAT_FASTQ.out.reads.map { meta, fastq ->
                     return [meta, fastq]
