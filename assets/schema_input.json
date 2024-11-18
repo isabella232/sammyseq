@@ -28,10 +28,10 @@
                 "errorMessage": "FastQ file for reads 2 cannot contain spaces and must have extension '.fq.gz' or '.fastq.gz'"
             },
             "experimentalID": {
-                    "type": "string",
-                    "pattern": "^\\S+$",
-                    "errorMessage": "experimentalID must be provided and cannot contain spaces",
-                    "meta": ["id"]
+                "type": "string",
+                "pattern": "^\\S+$",
+                "errorMessage": "experimentalID must be provided and cannot contain spaces",
+                "meta": ["id"]
             },
             "fraction": {
                 "type": "string",
