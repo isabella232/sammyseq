@@ -7,7 +7,7 @@ org_path: null
 repository_type: pipeline
 template:
   author: Margherita Mutarelli, Lucio Di Filippo
-  description: analysis pipeline for SAMMY-seq
+  description: Analysis pipeline for SAMMY-seq
   force: false
   is_nfcore: true
   name: sammyseq

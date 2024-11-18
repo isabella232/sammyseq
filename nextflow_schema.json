@@ -2,7 +2,7 @@
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "$id": "https://raw.githubusercontent.com/nf-core/sammyseq/master/nextflow_schema.json",
     "title": "nf-core/sammyseq pipeline parameters",
-    "description": "analysis pipeline for SAMMY-seq",
+    "description": "Analysis pipeline for SAMMY-seq",
     "type": "object",
     "$defs": {
         "input_output_options": {
