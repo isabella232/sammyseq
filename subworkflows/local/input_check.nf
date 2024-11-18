@@ -16,8 +16,8 @@ workflow INPUT_CHECK {
         .set { reads }
 
     reads
-        
-        .map { meta, fastq -> 
+
+        .map { meta, fastq ->
             def expID = meta.expID  // Prendi l'expID da meta
             meta.remove('fraction') // Rimuovi il campo 'fraction'
 
@@ -27,7 +27,7 @@ workflow INPUT_CHECK {
         //.view()
         .map{ expID, meta , fastq ->
             meta = meta[0].clone()  // Prendi solo la prima mappa e crea una copia
-            meta.id = expID  // Sostituisci il valore nel campo id con expID 
+            meta.id = expID  // Sostituisci il valore nel campo id con expID
             [ [meta], fastq.flatten() ]
             }
         .set { reads_to_merge }

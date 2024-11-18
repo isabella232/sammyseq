@@ -238,7 +238,7 @@ workflow SAMMYSEQ {
     //a channel is created for the trimmed files and the id is renamed to meta, so that when passed to fastqc it does not overwrite the output files with non-trimmed ones
     ch_fastqc_trim=TRIMMOMATIC.out.trimmed_reads
     // ch_fastqc_trim=TRIMGALORE.out.reads
-                   .map{ meta, path ->
+                    .map{ meta, path ->
                         def id=meta.subMap('id')
                         newid=id.id + "_trim"
                         sng=meta.subMap('single_end').single_end
@@ -281,7 +281,7 @@ workflow SAMMYSEQ {
     // Index Fasta File for Markduplicates
     SAMTOOLS_FAIDX (
             ch_fasta_meta,
-             [[], []]
+            [[], []]
         )
 
     ch_fai_for_cut = SAMTOOLS_FAIDX.out.fai.collect()
@@ -328,7 +328,7 @@ workflow SAMMYSEQ {
 
     //ch_bam_bai_combined = BAM_MARKDUPLICATES_PICARD.out.bam.join(BAM_MARKDUPLICATES_PICARD.out.bai, by: [0])
 
-   ch_bam_bai_combined =  BAM_MARKDUPLICATES_PICARD.out.bam
+    ch_bam_bai_combined =  BAM_MARKDUPLICATES_PICARD.out.bam
         .join(BAM_MARKDUPLICATES_PICARD.out.bai, by: [0], remainder: true)
         .map {
             meta, bam, bai  ->
@@ -377,9 +377,9 @@ workflow SAMMYSEQ {
         Channel.fromPath(params.comparisonFile)
                 .splitCsv(header : true)
                 .map{ row ->
-                   // [ row.sample2 + "_T1", row.sample1 + "_T1",row.sample1 + "_T1_VS_" + row.sample2 + "_T1"]
-                   //[ row.sample2 + "_T1", row.sample1 + "_T1_VS_" + row.sample2 + "_T1"]
-                   [ row.sample2 , row.sample1 + "_VS_" + row.sample2 ]
+                    // [ row.sample2 + "_T1", row.sample1 + "_T1",row.sample1 + "_T1_VS_" + row.sample2 + "_T1"]
+                    //[ row.sample2 + "_T1", row.sample1 + "_T1_VS_" + row.sample2 + "_T1"]
+                    [ row.sample2 , row.sample1 + "_VS_" + row.sample2 ]
                 }
                 .set { comparisons_ch_s2 }
 
@@ -421,8 +421,8 @@ workflow SAMMYSEQ {
         //4.run rscript
 
         RTWOSAMPLESMLE (comparisons_merge_ch,
-                       CUT_SIZES_GENOME.out.ch_sizes_genome
-                       )
+                        CUT_SIZES_GENOME.out.ch_sizes_genome
+                        )
 
         if (params.stopAt == 'RTWOSAMPLESMLE') {
         return
