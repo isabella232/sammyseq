@@ -36,14 +36,14 @@ workflow PREPARE_GENOME {
         ch_fasta    = GUNZIP_FASTA ( [ [:], params.fasta ] ).gunzip.map{ it[1] }
         ch_versions = ch_versions.mix(GUNZIP_FASTA.out.versions)
     } else {
-        ch_fasta =  [ [:], file(input_fasta) ] 
+        ch_fasta =  [ [:], file(input_fasta) ]
     }
 
     //println(ch_fasta)
     // Make fasta file available if reference saved or IGV is run
     //if (params.save_reference || !params.skip_igv) {
 
-    // if (params.save_reference) {    
+    // if (params.save_reference) {
     //     file("${params.outdir}/genome/").mkdirs()
     //     ch_fasta.copyTo("${params.outdir}/genome/")
     // }
@@ -58,20 +58,20 @@ workflow PREPARE_GENOME {
     // Uncompress BWA index or generate from scratch if required
     //
     ch_bwa_index = Channel.empty()
-    
-        if (params.bwa_index) {
-            if (params.bwa_index.endsWith('.tar.gz')) {
-                ch_bwa_index = UNTAR_BWA_INDEX ( [ [:], params.bwa_index ] ).untar
+
+        if (params.bwa) {
+            if (params.bwa.endsWith('.tar.gz')) {
+                ch_bwa_index = UNTAR_BWA_INDEX ( [ [:], params.bwa ] ).untar
                 ch_versions  = ch_versions.mix(UNTAR_BWA_INDEX.out.versions)
             } else {
-                ch_bwa_index = [ [:], file(params.bwa_index) ]
+                ch_bwa_index = [ [:], file(params.bwa) ]
             }
         } else {
             ch_bwa_index = BWA_INDEX ( ch_fasta ).index
             ch_versions  = ch_versions.mix(BWA_INDEX.out.versions)
         }
-    
-    
+
+
 
     //make chromosome size index
 
@@ -91,7 +91,7 @@ workflow PREPARE_GENOME {
 
     emit:
     fasta         = ch_fasta                  //    path: genome.fasta
-    bwa_index     = ch_bwa_index              //    path: bwa/index/
- 
+    bwa           = ch_bwa_index              //    path: bwa/index/
+
     versions    = ch_versions.ifEmpty(null) // channel: [ versions.yml ]
 }
