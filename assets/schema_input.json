@@ -31,13 +31,13 @@
                 "type": "string",
                 "pattern": "^\\S+$",
                 "errorMessage": "experimentalID must be provided and cannot contain spaces",
-                "meta": ["id"]
+                "meta": ["experimentalID"]
             },
             "fraction": {
                 "type": "string",
                 "pattern": "^\\S+$",
                 "errorMessage": "fraction must be provided and cannot contain spaces",
-                "meta": ["id"]
+                "meta": ["fraction"]
             }
         },
         "required": ["sample", "fastq_1", "experimentalID", "fraction"]
